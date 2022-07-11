@@ -1,0 +1,59 @@
+import type { NextPage } from "next";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import Featured from "../components/Featured";
+import PizzaList from "../components/PizzaList";
+
+import StyledButton, {
+  FancyButton,
+  AnimatedLogo,
+  DarkButton,
+} from "../components/button/Button";
+import { ThemeProvider , createGlobalStyle } from "styled-components";
+
+const theme = {
+  dark: {
+    primary: '#000' , 
+    text: '#fff'
+  } , 
+  light: {
+    primary: '#fff' , 
+    text: '#000'
+  }
+}
+
+const GlobalStyle = createGlobalStyle`
+  button {
+    border-radius: 30%;
+  }
+`
+
+const Home: NextPage = () => {
+  return (
+    <div className={styles.container}>
+      <Head>
+        <title>Yerevan Pizza</title>
+        <meta name="description" content="Yerevan Pizza" />
+        <link rel="icon" href="/pizza-icon.ico" />
+      </Head>
+
+      {/* <Featured />
+      <PizzaList /> */}
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <div style={{ height: "100vh" }}>
+          <StyledButton type="submit">Button</StyledButton>
+          <div>
+            <br />
+          </div>
+          <StyledButton variant="outline">Button</StyledButton>
+          <FancyButton>Funcy Button</FancyButton>
+          <AnimatedLogo src="/vercel.svg" />
+          <DarkButton >Dark button</DarkButton>
+        </div>
+      </ThemeProvider>
+    </div>
+  );
+};
+
+export default Home;
