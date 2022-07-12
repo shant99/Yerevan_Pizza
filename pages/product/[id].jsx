@@ -1,22 +1,36 @@
 import styles from "../../styles/Product.module.css";
 import Image from "next/image";
 import { useState } from "react";
+import axios from "axios";
+import { v4 } from "uuid";
 
-export const getServerSideProps = async (context) => {
-  const { id } = context.params;
-  const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
-  const data = await response.json();
-   
-  if (!data) {
-    return {
-      notFound: true,
-    }
-  }
+export const getServerSideProps = async ({ params }) => {
+  const res = await axios.get(
+    `http://localhost:3000/api/products/${params.id}`
+  );
 
   return {
-    props: { post: data },
-  }
+    props: {
+      pizza: res.data,
+    },
+  };
 };
+
+// export const getServerSideProps = async (context) => {
+//   const { id } = context.params;
+//   const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+//   const data = await response.json();
+
+//   if (!data) {
+//     return {
+//       notFound: true,
+//     }
+//   }
+
+//   return {
+//     props: { post: data },
+//   }
+// };
 
 // export const getStaticPaths = async () => {
 //   const response = await fetch("https://jsonplaceholder.typicode.com/posts/");
@@ -50,16 +64,34 @@ export const getServerSideProps = async (context) => {
 //   };
 // };
 
-const Product = ({ post }) => {
+const Product = ({ pizza }) => {
   const [size, setSize] = useState(0);
-  const pizza = {
-    id: post.id,
-    img: "/pizza.png",
-    name: post.title,
-    price: [19.9, 23.9, 27.9],
-    desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis arcu purus, rhoncus fringilla vestibulum vel, dignissim vel ante. Nulla facilisi. Nullam a urna sit amet tellus pellentesque egestas in in ante.",
-  };
-  console.log(post)
+  const [price, setPrice] = useState(pizza.prices[0]);
+  const [extras, setExtras] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+
+  function changePrice(number) {
+    setPrice(price + number);
+  }
+
+  function handleSize(sizeIndex) {
+    const difference = pizza.prices[sizeIndex] - pizza.prices[size];
+    setSize(sizeIndex);
+    changePrice(difference);
+  }
+
+  function handleChange(e, option) {
+    const checked = e.target.checked;
+
+    if (checked) {
+      changePrice(option.price);
+      setExtras((prev) => [...prev, option]);
+    } else {
+      changePrice(-option.price);
+      setExtras(extras.filter((extra) => extra.id !== option.id));
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.left}>
@@ -68,67 +100,50 @@ const Product = ({ post }) => {
         </div>
       </div>
       <div className={styles.right}>
-        <h1 className={styles.title}>{pizza.name}</h1>
+        <h1 className={styles.title}>{pizza.title}</h1>
         <h2>{pizza.id}</h2>
-        <span className={styles.price}>$ {pizza.price[size]}</span>
+        <span className={styles.price}>$ {price}</span>
         <p className={styles.desc}>{pizza.desc}</p>
         <h3 className={styles.choose}>Choose the size</h3>
         <div className={styles.sizes}>
-          <div className={styles.size} onClick={() => setSize(0)}>
+          <div className={styles.size} onClick={() => handleSize(0)}>
             <Image src="/size.png" layout="fill" alt="" />
             <span className={styles.number}>Small</span>
           </div>
-          <div className={styles.size} onClick={() => setSize(1)}>
+          <div className={styles.size} onClick={() => handleSize(1)}>
             <Image src="/size.png" layout="fill" alt="" />
             <span className={styles.number}>Medium</span>
           </div>
-          <div className={styles.size} onClick={() => setSize(2)}>
+          <div className={styles.size} onClick={() => handleSize(2)}>
             <Image src="/size.png" layout="fill" alt="" />
             <span className={styles.number}>Large</span>
           </div>
         </div>
         <h3 className={styles.choose}>Choose additional ingredients</h3>
         <div className={styles.ingredients}>
-          <div className={styles.option}>
-            <input
-              type="checkbox"
-              id="double"
-              name="double"
-              className={styles.checkbox}
-            />
-            <label htmlFor="double">Double Ingredients</label>
-          </div>
-          <div className={styles.option}>
-            <input
-              className={styles.checkbox}
-              type="checkbox"
-              id="cheese"
-              name="cheese"
-            />
-            <label htmlFor="cheese">Extra Cheese</label>
-          </div>
-          <div className={styles.option}>
-            <input
-              className={styles.checkbox}
-              type="checkbox"
-              id="spicy"
-              name="spicy"
-            />
-            <label htmlFor="spicy">Spicy Sauce</label>
-          </div>
-          <div className={styles.option}>
-            <input
-              className={styles.checkbox}
-              type="checkbox"
-              id="garlic"
-              name="garlic"
-            />
-            <label htmlFor="garlic">Garlic Sauce</label>
-          </div>
+          {pizza.extraOptions.map((option) => {
+            return (
+              <div className={styles.option} key={option._id}>
+                <input
+                  type="checkbox"
+                  id={option.text}
+                  name={option.text}
+                  className={styles.checkbox}
+                  onChange={(e) => handleChange(e, option)}
+                />
+                <label htmlFor="double">{option.text}</label>
+              </div>
+            );
+          })}
         </div>
         <div className={styles.add}>
-            <input type="number" defaultValue={1} className={styles.quantity}/>
-            <button className={styles.button}>Add to Cart</button>
+          <input
+            type="number"
+            defaultValue={1}
+            className={styles.quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+          <button className={styles.button}>Add to Cart</button>
         </div>
       </div>
     </div>

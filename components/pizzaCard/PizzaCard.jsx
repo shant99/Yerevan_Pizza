@@ -1,20 +1,18 @@
-
-
-
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./PizzaCard.module.css";
 
-const PizzaCard = ({id}) => {
+const PizzaCard = ({pizza}) => {
+  console.log(pizza)
   return (
     <div className={styles.container}>
-      <Link href={`/product/${id}`} >
-       <Image src="/pizza.png" alt="" width="500" height="500" />
+      <Link href={`/product/${pizza._id}`} >
+       <Image src={pizza.img} alt="sd" width="500" height="500" />
       </Link>
-       <h1 className={styles.title}>FIORI DI ZUCCA</h1>
-      <span className={styles.price}>$19.90</span>
+       <h1 className={styles.title}>{pizza.title}</h1>
+      <span className={styles.price}>$ {pizza.prices[0]}</span>
       <p className={styles.desc}>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        {pizza.desc}
       </p>
     </div>
   );
